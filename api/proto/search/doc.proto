@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package search;
+
+option go_package=".;search";
+
+message Keyword {
+    string Field = 1;
+    string Word = 2;
+}
+
+message Document {
+    string Id = 1;          // unique id for document
+    uint64 IntId = 2;       // unique id for inverted index
+    uint64 BitsFeature = 3;
+    repeated Keyword Keywords = 4;      // keywords for inverted index
+    bytes Bytes = 5;        // serialized object
+}
+
+// protoc --go_out=./types --proto_path=./types doc.proto

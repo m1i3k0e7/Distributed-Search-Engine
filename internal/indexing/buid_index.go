@@ -1,0 +1,103 @@
+package indexing
+
+import (
+	"encoding/csv"
+	"io"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+	// "time"
+
+	search_proto "github.com/m1i3k0e7/distributed-search-engine/api/proto/search"
+	"github.com/m1i3k0e7/distributed-search-engine/pkg/logger"
+	proto "google.golang.org/protobuf/proto"
+	farmhash "github.com/leemcloughlin/gofarmhash"
+	"github.com/m1i3k0e7/distributed-search-engine/internal/search/common"
+	uuid "github.com/google/uuid"
+	"github.com/m1i3k0e7/distributed-search-engine/pkg/preprocessing"
+)
+
+// Write all documents in csvFile to indexer
+//
+// totalWorkers: total number of workers; workerIndex: index of this worker, set to 0 if only one worker
+func BuildIndexFromFile(csvFile string, indexer IIndexer, totalWorkers, workerIndex int) {
+	file, err := os.Open(csvFile)
+	if err != nil {
+		log.Printf("open file %s failed: %s", csvFile, err)
+		return
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	progress := 0
+	for {
+		record, err := reader.Read()
+		if err != nil {
+			if err != io.EOF {
+				log.Printf("read record failed: %s", err)
+			}
+			break
+		}
+
+		if len(record) < 9 {
+			continue
+		}
+
+		docId := uuid.New().String()
+		
+		if totalWorkers > 0 && int(farmhash.Hash32WithSeed([]byte(docId), 0)) % totalWorkers != workerIndex {
+			continue
+		}
+		product := &search_proto.Product{
+			Id:     docId,
+			Name:  record[0],
+			Category: record[1],
+			Image: record[3],
+		}
+		
+		n, _ := strconv.ParseFloat(record[5], 64)
+		product.Ratings = float64(n)
+		m, _ := strconv.Atoi(record[6])
+		product.NoRatings = int32(m)
+		
+		n, _ = strconv.ParseFloat(record[7], 64)
+		product.DiscountPrice = float64(n)
+		n, _ = strconv.ParseFloat(record[8], 64)
+		product.ActualPrice = float64(n)
+		
+		// keywords := strings.Split(record[0], " ")
+		keywords := preprocessing.Preprocess(record[0])
+		if len(keywords) > 0 {
+			for _, word := range keywords {
+				word = strings.TrimSpace(word)
+				if len(word) > 0 {
+					product.Keywords = append(product.Keywords, strings.ToLower(word))
+				}
+			}
+		}
+		AddProduct2Index(product, indexer)
+	}
+	logger.Log.Printf("add %d documents to index totally", progress)
+}
+
+func AddProduct2Index(product *search_proto.Product, indexer IIndexer) {
+	doc := search_proto.Document{Id: product.Id}
+	bs, err := proto.Marshal(product)
+	if err == nil {
+		doc.Bytes = bs
+	} else {
+		log.Printf("serielize video failed: %s", err)
+		return
+	}
+
+	keywords := make([]*search_proto.Keyword, 0, len(product.Keywords))
+	for _, word := range product.Keywords {
+		keywords = append(keywords, &search_proto.Keyword{Field: "content", Word: strings.ToLower(word)})
+	}
+	
+	doc.Keywords = keywords
+	doc.BitsFeature = common.GetClassBits(product.Keywords)
+
+	indexer.AddDoc(doc)
+}

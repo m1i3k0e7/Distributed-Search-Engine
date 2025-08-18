@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package index_service;
+
+option go_package=".;index";
+
+import "search/doc.proto";
+import "search/term_query.proto";
+
+
+message DocId {
+    string DocId = 1;
+}
+
+message AffectedCount {
+    int32 Count = 1;
+}
+
+message SearchRequest {
+    search.TermQuery Query = 1;
+    uint64 OnFlag = 2;
+    uint64 OffFlag = 3;
+    repeated uint64 OrFlags = 4;
+}
+
+message SearchResult {
+    repeated search.Document Results = 1;
+}
+
+message CountRequest {
+}
+
+service IndexService {
+    rpc DeleteDoc(DocId) returns (AffectedCount);
+    rpc AddDoc(search.Document) returns (AffectedCount);
+    rpc Search(SearchRequest) returns (SearchResult);
+    rpc Count(CountRequest) returns (AffectedCount);
+}
+
+// protoc --go_out=plugins=grpc:. -I=D:/go_project/go2career/radic --proto_path=./index_service index.proto --go_opt=Mtypes/doc.proto=github.com/Orisun/radic/v2/types --go_opt=Mtypes/term_query.proto=github.com/Orisun/radic/v2/types 

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package search;
+
+option go_package=".;search";
+
+message Product {
+    string Id = 1;
+    string Name = 2;
+    string Image = 3;
+    string Category = 4;
+    double Ratings = 5;
+    int32 NoRatings = 6;
+    double DiscountPrice = 7;
+    double ActualPrice = 8;
+    repeated string Keywords = 9;
+}
+
+// protoc --gogofaster_out=./demo --proto_path=./demo product.proto

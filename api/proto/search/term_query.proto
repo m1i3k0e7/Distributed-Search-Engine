@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package search;
+
+option go_package=".;search";
+
+import "search/doc.proto";
+
+message TermQuery {
+    // Only one of three attrs is non-nil
+    Keyword Keyword = 1;
+    repeated TermQuery Must = 2;
+    repeated TermQuery Should = 3;
+}
+
+// protoc --go_out=./types --proto_path=./types term_query.proto 
