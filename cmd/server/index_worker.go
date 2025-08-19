@@ -29,7 +29,8 @@ func GrpcIndexerInit() {
 	service.Init(50000, dbType, *dbPath+"_part"+strconv.Itoa(*workerIndex))
 	if *rebuildIndex {
 		logger.Log.Printf("totalWorkers=%d, workerIndex=%d", *totalWorkers, *workerIndex)
-		indexing.BuildIndexFromFile(csvFile, service.Indexer, *totalWorkers, *workerIndex) // rebuild index from csv file
+		indexing.BuildIndexFromDir(csvFilesDir, service.Indexer, *totalWorkers, *workerIndex) // rebuild index from csv files in the directory
+		// indexing.BuildIndexFromFile(csvFile, service.Indexer, *totalWorkers, *workerIndex) // rebuild index from csv file
 	} else {
 		service.Indexer.LoadFromIndexFile() // load index from file
 	}

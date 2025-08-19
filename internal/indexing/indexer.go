@@ -119,6 +119,7 @@ func (indexer *Indexer) DeleteDoc(docId string) int {
 func (indexer *Indexer) Search(query *search_proto.TermQuery, onFlag uint64, offFlag uint64, orFlags []uint64) []*search_proto.Document {
 	docIds := indexer.reverseIndex.Search(query, onFlag, offFlag, orFlags)
 	if len(docIds) == 0 {
+		logger.Log.Printf("no documents found for query: %s", query)
 		return nil
 	}
 

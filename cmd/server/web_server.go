@@ -18,7 +18,8 @@ func WebServerInit(mode int) {
 			panic(err)
 		}
 		if *rebuildIndex {
-			indexing.BuildIndexFromFile(csvFile, standaloneIndexer, 0, 0) // rebuild index from csv file
+			indexing.BuildIndexFromDir(csvFilesDir, standaloneIndexer, *totalWorkers, *workerIndex) // rebuild index from csv files in the directory
+			// indexing.BuildIndexFromFile(csvFile, standaloneIndexer, 0, 0) // rebuild index from csv file
 		} else {
 			standaloneIndexer.LoadFromIndexFile() // load index from file
 		}

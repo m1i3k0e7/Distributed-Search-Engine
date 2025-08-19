@@ -2,12 +2,15 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/m1i3k0e7/distributed-search-engine/internal/indexing/kvdb"
 	"github.com/m1i3k0e7/distributed-search-engine/internal/config"
 	"github.com/m1i3k0e7/distributed-search-engine/internal/handler"
+	"github.com/m1i3k0e7/distributed-search-engine/internal/indexing/kvdb"
+	"github.com/rs/cors"
 )
 
 var (
@@ -21,7 +24,7 @@ var (
 
 var (
 	dbType      = kvdb.BOLT
-	csvFile     = config.RootPath + "/../data/bili_video.csv"
+	csvFilesDir     = config.RootPath + "/../data/test"
 	etcdServers = []string{"127.0.0.1:2379"}
 )
 
@@ -30,16 +33,22 @@ func StartGin() {
 	gin.SetMode(gin.ReleaseMode)
 
 	engine.Use(handler.GetUserInfo)
-	// classes := [...]string{"Home, Kitchen, Pets", "Grocery & Gourmet Foods", "Men's Shoes", "Kids's Fashion", "Women's Shoes", "Accessories", "Bags & Luggage", "Industrial Supplies", "Stores", "Men's Clothing", "Women's Clothing", "TV, Audio & Cameras", "Beauty & Health", "Home & Kitchen", "Pet Supplies", "Music", "Toys & Baby Products", "Sports & Fitness", "Car & Motorbike", "Appliances"}
-	// engine.GET("/", func(ctx *gin.Context) {
-	// 	ctx.HTML(http.StatusOK, "search.html", classes)
-	// })
-	// engine.GET("/up", func(ctx *gin.Context) {
-	// 	ctx.HTML(http.StatusOK, "up_search.html", classes)
-	// })
 
 	engine.POST("/search", handler.SearchAll)
-	engine.Run("127.0.0.1:" + strconv.Itoa(*port))
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+	})
+	handler := c.Handler(engine)
+
+	addr := "127.0.0.1:" + strconv.Itoa(*port)
+	log.Printf("Starting server on %s", addr)
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		log.Fatalf("ListenAndServe: %v", err)
+	}
 }
 
 func main() {

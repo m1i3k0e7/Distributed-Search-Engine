@@ -4,7 +4,6 @@ import (
 	stdctx "context"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/m1i3k0e7/distributed-search-engine/internal/indexing"
 	"github.com/m1i3k0e7/distributed-search-engine/pkg/logger"
@@ -20,17 +19,6 @@ import (
 
 var Indexer indexing.IIndexer
 
-func clearnKeywords(words []string) []string {
-	keywords := make([]string, 0, len(words))
-	for _, w := range words {
-		word := strings.TrimSpace(strings.ToLower(w))
-		if len(word) > 0 {
-			keywords = append(keywords, word)
-		}
-	}
-	return keywords
-}
-
 func Search(ctx *gin.Context) {
 	var request common.SearchRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -39,7 +27,7 @@ func Search(ctx *gin.Context) {
 		return
 	}
 
-	keywords := clearnKeywords(request.Keywords)
+	keywords := request.Keywords
 	if len(keywords) == 0 {
 		ctx.String(http.StatusBadRequest, "Keywords must be non-empty")
 		return
@@ -54,6 +42,7 @@ func Search(ctx *gin.Context) {
 
 	orFlags := []uint64{common.GetClassBits(request.Classes)}
 	docs := Indexer.Search(query, 0, 0, orFlags)
+
 	products := make([]search_proto.Product, 0, len(docs))
 	for _, doc := range docs {
 		var product search_proto.Product
@@ -76,9 +65,8 @@ func SearchAll(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: parse query into keywords
-	keywords := preprocessing.Preprocess(request.Query)
-	request.Keywords = clearnKeywords(keywords)
+	keywords := preprocessing.PreprocessForLargeDataset(request.Query)
+	request.Keywords = keywords
 	if len(request.Keywords) == 0 {
 		ctx.String(http.StatusBadRequest, "Query must be non-empty and contain valid keywords")
 		return

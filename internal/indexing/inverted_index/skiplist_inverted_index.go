@@ -4,10 +4,10 @@ import (
 	"runtime"
 	"sync"
 
-	search_proto "github.com/m1i3k0e7/distributed-search-engine/api/proto/search"
-	"github.com/m1i3k0e7/distributed-search-engine/pkg/concurrent"
 	"github.com/huandu/skiplist"
 	farmhash "github.com/leemcloughlin/gofarmhash"
+	search_proto "github.com/m1i3k0e7/distributed-search-engine/api/proto/search"
+	"github.com/m1i3k0e7/distributed-search-engine/pkg/concurrent"
 	// "github.com/m1i3k0e7/distributed-search-engine/pkg/logger"
 )
 
@@ -41,6 +41,7 @@ func (indexer *SkipListReverseIndex) Add(doc search_proto.Document) {
 		lock := indexer.getLock(key)
 		lock.Lock() // lock for writing
 		sklValue := SkipListValue{doc.Id, doc.BitsFeature}
+		
 		if value, exists := indexer.table.Get(key); exists {
 			list := value.(*skiplist.SkipList)
 			list.Set(doc.IntId, sklValue)
@@ -48,6 +49,7 @@ func (indexer *SkipListReverseIndex) Add(doc search_proto.Document) {
 			list := skiplist.New(skiplist.Uint64)
 			list.Set(doc.IntId, sklValue)
 			indexer.table.Set(key, list)
+			// logger.Log.Printf("create new skiplist for key %s: ", key)
 		}
 		// logger.Log.Printf("add key %s value %d to reverse index\n", key, doc.IntId)
 		lock.Unlock()

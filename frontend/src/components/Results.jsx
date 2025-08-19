@@ -17,6 +17,7 @@ function ProductCard({ product }) {
         height="200"
         image={imageUrl}
         alt={product.Name}
+        sx={{ objectFit: 'contain' }}
       />
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 500 }}>
