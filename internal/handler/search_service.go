@@ -41,6 +41,7 @@ func Search(ctx *gin.Context) {
 	}
 
 	orFlags := []uint64{common.GetClassBits(request.Classes)}
+	logger.Log.Printf("search query: %s, orFlags: %b", query, orFlags)
 	docs := Indexer.Search(query, 0, 0, orFlags)
 
 	products := make([]search_proto.Product, 0, len(docs))

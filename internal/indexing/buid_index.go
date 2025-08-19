@@ -120,7 +120,7 @@ func AddProduct2Index(product *search_proto.Product, indexer IIndexer) {
 	}
 	
 	doc.Keywords = keywords
-	doc.BitsFeature = common.GetClassBits(product.Keywords)
+	doc.BitsFeature = common.GetClassBits([]string{product.Category}) | common.GetClassBits(product.Keywords)
 
 	indexer.AddDoc(doc)
 }

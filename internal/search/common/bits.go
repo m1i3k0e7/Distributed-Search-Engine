@@ -38,7 +38,7 @@ func GetClassBits(keywords []string) uint64 {
 	if slices.Contains(keywords, "Men's Shoes") {
 		bits |= MENS_SHOES
 	}
-	if slices.Contains(keywords, "Kids's Fashion") {
+	if slices.Contains(keywords, "Kids' Fashion") {
 		bits |= KIDS_FASHION
 	}
 	if slices.Contains(keywords, "Women's Shoes") {
@@ -89,6 +89,5 @@ func GetClassBits(keywords []string) uint64 {
 	if slices.Contains(keywords, "Appliances") {
 		bits |= APPLIANCES
 	}
-	
 	return bits
 }
