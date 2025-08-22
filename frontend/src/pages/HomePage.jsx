@@ -11,6 +11,7 @@ import {
 
 function HomePage() {
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [suggestionsHeight, setSuggestionsHeight] = useState(0);
   const navigate = useNavigate();
 
   const handleCategoryClick = (category) => {
@@ -46,17 +47,23 @@ function HomePage() {
       }}
     >
       <Typography variant="h1" color="text.primary">
-        Nexus Search
+        Go Search
       </Typography>
       <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '600px' }}>
         Your one-stop destination to find and discover amazing products.
       </Typography>
       
       <Box sx={{ width: '100%', maxWidth: '700px' }}>
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar onSearch={handleSearch} onSuggestionsHeightChange={setSuggestionsHeight} />
       </Box>
 
-      <Box sx={{ maxWidth: '800px', width: '100%', p: 2 }}>
+      <Box sx={{
+        maxWidth: '800px',
+        width: '100%',
+        p: 2,
+        marginTop: `${suggestionsHeight}px`,
+        transition: 'margin-top 0.2s ease-in-out',
+      }}>
         <Stack direction="row" justifyContent="center" flexWrap="wrap" gap={1.5}>
           {CATEGORIES.map((category) => (
             <Chip

@@ -81,6 +81,20 @@ func (s *Bolt) BatchSet(keys, values [][]byte) error {
 	return err
 }
 
+// SetBucket sets the bucket for the database, returns the database instance
+func (s *Bolt) SetBucket(bucket string) error {
+	s.bucket = []byte(bucket)
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("trie"))
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Get executes a function within the context of a managed read-only transaction.
 // Any error that is returned from the function is returned from the View() method.
 func (s *Bolt) Get(k []byte) ([]byte, error) {

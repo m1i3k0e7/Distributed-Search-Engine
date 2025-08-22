@@ -7,15 +7,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	// "time"
 
-	search_proto "github.com/m1i3k0e7/distributed-search-engine/api/proto/search"
-	"github.com/m1i3k0e7/distributed-search-engine/pkg/logger"
-	proto "google.golang.org/protobuf/proto"
-	farmhash "github.com/leemcloughlin/gofarmhash"
-	"github.com/m1i3k0e7/distributed-search-engine/internal/search/common"
+	// "time"
 	uuid "github.com/google/uuid"
+	farmhash "github.com/leemcloughlin/gofarmhash"
+	search_proto "github.com/m1i3k0e7/distributed-search-engine/api/proto/search"
+	"github.com/m1i3k0e7/distributed-search-engine/internal/search/common"
+	"github.com/m1i3k0e7/distributed-search-engine/pkg/logger"
 	"github.com/m1i3k0e7/distributed-search-engine/pkg/preprocessing"
+	"github.com/m1i3k0e7/distributed-search-engine/pkg/trie"
+	proto "google.golang.org/protobuf/proto"
+	"github.com/m1i3k0e7/distributed-search-engine/internal/indexing/trie"
 )
 
 func BuildIndexFromDir(csvFilesDir string, indexer IIndexer, totalWorkers, workerIndex int) {
@@ -46,6 +48,7 @@ func BuildIndexFromFile(csvFile string, indexer IIndexer, totalWorkers, workerIn
 	}
 	defer file.Close()
 
+	queryTrie := trie.NewTrie();
 	reader := csv.NewReader(file)
 	progress := 0
 	for {
@@ -67,7 +70,7 @@ func BuildIndexFromFile(csvFile string, indexer IIndexer, totalWorkers, workerIn
 			log.Printf("skip document %s for worker %d", docId, workerIndex)
 			continue
 		}
-
+		
 		product := &search_proto.Product{
 			Id:     docId,
 			Name:  record[0],
@@ -85,7 +88,8 @@ func BuildIndexFromFile(csvFile string, indexer IIndexer, totalWorkers, workerIn
 		n, _ = strconv.ParseFloat(record[8], 64)
 		product.ActualPrice = float64(n)
 		
-		// keywords := strings.Split(record[0], " ")
+		queryTrie.Insert(record[0]);
+	
 		keywords := preprocessing.PreprocessForLargeDataset(record[0])
 		if len(keywords) > 0 {
 			for _, word := range keywords {
@@ -101,6 +105,12 @@ func BuildIndexFromFile(csvFile string, indexer IIndexer, totalWorkers, workerIn
 			logger.Log.Printf("processed %d documents", progress)
 		}
 	}
+
+	err = storeTrieToDB(queryTrie)
+	if err != nil {
+		panic(err)
+	}
+
 	logger.Log.Printf("add %d documents to index totally", progress)
 }
 
@@ -123,4 +133,23 @@ func AddProduct2Index(product *search_proto.Product, indexer IIndexer) {
 	doc.BitsFeature = common.GetClassBits([]string{product.Category}) | common.GetClassBits(product.Keywords)
 
 	indexer.AddDoc(doc)
+}
+
+func storeTrieToDB(trie *trie.Trie) error {
+	trieDB, err := storage.NewTrieDB("../../internal/indexing/trie/storage/trie_bolt" )
+	if err != nil {
+		return err
+	}
+
+	err = trieDB.StoreTrie(trie)
+	if err != nil {
+		return err
+	}
+
+	err = trieDB.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

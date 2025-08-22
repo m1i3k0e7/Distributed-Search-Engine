@@ -214,6 +214,13 @@ func (s *Badger) IterDB(fn func(k, v []byte) error) int64 {
 	return atomic.LoadInt64(&total)
 }
 
+func (s *Badger) SetBucket(bucket string) error {
+	// Badger does not support buckets like BoltDB, so this method is a no-op
+	// If you want to use buckets, you can create a separate Badger instance for each bucket
+	logger.Log.Printf("Badger does not support buckets, this method is a no-op")
+	return nil
+}
+
 // IterKey, only iterate keys, not values
 func (s *Badger) IterKey(fn func(k []byte) error) int64 {
 	var total int64

@@ -94,7 +94,7 @@ function ResultsPage() {
     <Box sx={{ my: 2 }}>
       <Box> {/* New wrapper Box */}
         <Typography variant="h4" component="h1" align="center" gutterBottom>
-          Nexus Search
+          Go Search
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, my: 2 }}>
           {/* Sidebar */}

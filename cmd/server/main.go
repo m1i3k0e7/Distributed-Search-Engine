@@ -20,6 +20,7 @@ var (
 	dbPath       = flag.String("dbPath", "", "path to the local kvdb database")
 	totalWorkers = flag.Int("totalWorkers", 0, "total number of index workers in the distributed system")
 	workerIndex  = flag.Int("workerIndex", 0, "index worker id in the distributed system")
+	trieDBPath   = "../../internal/indexing/trie/storage/trie_bolt" // Path to the trie database file
 )
 
 var (
@@ -35,6 +36,7 @@ func StartGin() {
 	engine.Use(handler.GetUserInfo)
 
 	engine.POST("/search", handler.SearchAll)
+	engine.POST("/associate", handler.AssociateQuery)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173"},

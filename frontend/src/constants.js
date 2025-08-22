@@ -3,7 +3,7 @@ export const CATEGORIES = [
   "Home, Kitchen, Pets",
   "Grocery & Gourmet Foods",
   "Men's Shoes",
-  "Kids's Fashion",
+  "Kids' Fashion",
   "Women's Shoes",
   "Accessories",
   "Bags & Luggage",

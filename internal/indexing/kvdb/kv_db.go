@@ -20,6 +20,7 @@ type IKeyValueDB interface {
 	Has(k []byte) bool                        // Check if a key exists
 	IterDB(fn func(k, v []byte) error) int64  // Iterate through all key-value pairs, return the number of pairs
 	IterKey(fn func(k []byte) error) int64    // Iterate through all keys, return the number of keys
+	SetBucket(bucket string) error		 	  // Set the bucket for the database, return the database instance
 	Close() error                             // Flush memory to disk and close the database
 }
 

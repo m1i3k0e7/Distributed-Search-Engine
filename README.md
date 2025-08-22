@@ -26,6 +26,7 @@ The frontend is a single-page application (SPA) that provides the user interface
 -   **UI Components**: Uses **Material-UI** for a rich set of pre-built and customizable components.
 -   **Routing**: **React Router** is used for navigation between the home and search results pages.
 -   **Communication**: Interacts with the backend's `/search` API endpoint to fetch results.
+-   **Search Suggestions**: As you type in the search bar, the interface calls the backend's `/associate` endpoint to provide real-time query suggestions, similar to Google's search.
 
 ## Dataset
 
@@ -136,3 +137,26 @@ In this mode, one web server distributes search queries to multiple gRPC indexin
       "Classes": ["Optional", "Category", "Filters"]
     }
     ```
+
+### Query Association
+
+-   **URL**: `/associate`
+-   **Method**: `POST`
+-   **Body (JSON)**:
+    ```json
+    {
+      "query": "your partial query"
+    }
+    ```
+-   **Response (JSON)**:
+    An array of suggestion strings.
+    ```json
+    [
+      "suggestion one",
+      "suggestion two"
+    ]
+    ```
+
+## Acknowledgments
+
+The implementation of the Trie data structure and the search suggestion feature was inspired by and references the work from [CocaineCong/tangseng](https://github.com/CocaineCong/tangseng). Many thanks to their excellent project for providing a great reference.
