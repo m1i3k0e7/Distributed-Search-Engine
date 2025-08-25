@@ -25,7 +25,7 @@ var (
 
 var (
 	dbType      = kvdb.BOLT
-	csvFilesDir     = config.RootPath + "/../data/test"
+	csvFilesDir     = config.RootPath + "/../data/archive"
 	etcdServers = []string{"127.0.0.1:2379"}
 )
 
